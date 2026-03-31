@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import joblib
+from scipy import sparse
 
 from sklearn.cluster import MiniBatchKMeans, AgglomerativeClustering, DBSCAN, Birch
 from sklearn.mixture import GaussianMixture
@@ -20,11 +21,21 @@ def load_dense_array(path: Path) -> np.ndarray:
     return np.load(path)
 
 
+def load_sparse_matrix(path: Path):
+    return sparse.load_npz(path)
+
+
+def is_sparse_matrix(X) -> bool:
+    return sparse.issparse(X)
+
+
 def save_labels(path: Path, labels: np.ndarray) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     np.save(path, labels)
 
 
 def save_model(path: Path, model) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, path)
 
 
@@ -34,11 +45,12 @@ def save_config(path: Path, config: dict) -> None:
         json.dump(config, f, indent=2)
 
 
-def evaluate_clustering(X: np.ndarray, labels: np.ndarray, y_true: np.ndarray) -> dict:
+def evaluate_clustering(X, labels: np.ndarray, y_true: np.ndarray) -> dict:
     unique_labels = np.unique(labels)
+    non_noise_labels = [lab for lab in unique_labels if lab != -1]
 
     result = {
-        "n_clusters_found": int(len(unique_labels)),
+        "n_clusters_found": int(len(non_noise_labels)),
         "n_noise": int(np.sum(labels == -1)) if -1 in unique_labels else 0,
         "silhouette": np.nan,
         "davies_bouldin": np.nan,
@@ -47,23 +59,26 @@ def evaluate_clustering(X: np.ndarray, labels: np.ndarray, y_true: np.ndarray) -
         "nmi": np.nan,
     }
 
-    valid_for_internal = len(unique_labels) >= 2 and len(unique_labels) < len(labels)
+    valid_for_internal = len(non_noise_labels) >= 2 and len(non_noise_labels) < len(labels)
 
     if valid_for_internal:
+        # silhouette ume da radi i nad sparse matricama
         try:
             result["silhouette"] = float(silhouette_score(X, labels))
         except Exception:
             pass
 
-        try:
-            result["davies_bouldin"] = float(davies_bouldin_score(X, labels))
-        except Exception:
-            pass
+        # Ove metrike su najbezbednije nad dense reprezentacijama
+        if not is_sparse_matrix(X):
+            try:
+                result["davies_bouldin"] = float(davies_bouldin_score(X, labels))
+            except Exception:
+                pass
 
-        try:
-            result["calinski_harabasz"] = float(calinski_harabasz_score(X, labels))
-        except Exception:
-            pass
+            try:
+                result["calinski_harabasz"] = float(calinski_harabasz_score(X, labels))
+            except Exception:
+                pass
 
     try:
         result["ari"] = float(adjusted_rand_score(y_true, labels))
@@ -78,7 +93,7 @@ def evaluate_clustering(X: np.ndarray, labels: np.ndarray, y_true: np.ndarray) -
     return result
 
 
-def run_minibatch_kmeans(X: np.ndarray, n_clusters: int = 2, random_state: int = 42):
+def run_minibatch_kmeans(X, n_clusters: int = 2, random_state: int = 42):
     model = MiniBatchKMeans(
         n_clusters=n_clusters,
         random_state=random_state,
@@ -101,8 +116,8 @@ def run_gmm(X: np.ndarray, n_clusters: int = 2, random_state: int = 42):
     return model, labels
 
 
-def run_dbscan(X: np.ndarray, eps: float = 1.5, min_samples: int = 10):
-    model = DBSCAN(eps=eps, min_samples=min_samples)
+def run_dbscan(X, eps: float = 1.5, min_samples: int = 10, metric: str = "euclidean"):
+    model = DBSCAN(eps=eps, min_samples=min_samples, metric=metric, n_jobs=-1)
     labels = model.fit_predict(X)
     return model, labels
 
@@ -113,10 +128,18 @@ def run_birch(X: np.ndarray, n_clusters: int = 2):
     return model, labels
 
 
+def algorithm_supports_sparse(algorithm_name: str) -> bool:
+    return algorithm_name in {"minibatch_kmeans", "dbscan"}
+
+
+def algorithm_requires_dense(algorithm_name: str) -> bool:
+    return algorithm_name in {"agglomerative", "gmm", "birch"}
+
+
 def run_single_experiment(
     algorithm_name: str,
     representation_name: str,
-    X: np.ndarray,
+    X,
     y_true: np.ndarray,
     model_output_path: Path,
     labels_output_path: Path,
@@ -124,6 +147,12 @@ def run_single_experiment(
     params: dict | None = None,
 ) -> dict:
     params = params or {}
+
+    if is_sparse_matrix(X) and algorithm_requires_dense(algorithm_name):
+        raise ValueError(
+            f"Algorithm '{algorithm_name}' does not support sparse input for representation '{representation_name}'."
+        )
+
     start = time.perf_counter()
 
     if algorithm_name == "minibatch_kmeans":
@@ -141,16 +170,13 @@ def run_single_experiment(
 
     elapsed = time.perf_counter() - start
 
-    model_output_path.parent.mkdir(parents=True, exist_ok=True)
-    labels_output_path.parent.mkdir(parents=True, exist_ok=True)
-    config_output_path.parent.mkdir(parents=True, exist_ok=True)
-
     save_labels(labels_output_path, labels)
 
     config = {
         "algorithm": algorithm_name,
         "representation": representation_name,
         "params": params,
+        "input_type": "sparse" if is_sparse_matrix(X) else "dense",
     }
     save_config(config_output_path, config)
 
@@ -167,6 +193,7 @@ def run_single_experiment(
 
     metrics["algorithm"] = algorithm_name
     metrics["representation"] = representation_name
+    metrics["input_type"] = "sparse" if is_sparse_matrix(X) else "dense"
     metrics["runtime_sec"] = elapsed
     metrics["model_saved"] = model_saved
     metrics["model_save_error"] = model_save_error

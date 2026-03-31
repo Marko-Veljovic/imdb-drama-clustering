@@ -3,9 +3,14 @@ import numpy as np
 
 from src.clustering import (
     load_dense_array,
+    load_sparse_matrix,
     run_single_experiment,
     save_metrics_table,
 )
+
+
+def make_param_suffix(params: dict) -> str:
+    return "_".join(f"{k}-{v}" for k, v in params.items())
 
 
 def main() -> None:
@@ -17,36 +22,91 @@ def main() -> None:
 
     y_sample = np.load(processed_dir / "y_sample.npy", allow_pickle=True)
 
-    representations = {
+    # Dense reduced representations
+    dense_representations = {
         "svd_100": processed_dir / "X_svd_100.npy",
         "svd_50": processed_dir / "X_svd_50.npy",
         "svd_20": processed_dir / "X_svd_20.npy",
     }
 
-    experiments = []
+    # Full feature-space sparse representation
+    # Promeni ime fajla ako je kod tebe drugacije.
+    sparse_representations = {
+        "full_sparse": processed_dir / "X_sample.npz",
+    }
 
-    # Algorithms that use an explicit number of clusters
+    dense_experiments = []
+
+    # Dense algorithms over reduced representations
     for k in [2, 3, 5, 7]:
-        experiments.append(("minibatch_kmeans", {"n_clusters": k, "random_state": 42}))
-        experiments.append(("agglomerative", {"n_clusters": k}))
-        experiments.append(("gmm", {"n_clusters": k, "random_state": 42}))
-        experiments.append(("birch", {"n_clusters": k}))
+        dense_experiments.append(("minibatch_kmeans", {"n_clusters": k, "random_state": 42}))
+        dense_experiments.append(("agglomerative", {"n_clusters": k}))
+        dense_experiments.append(("gmm", {"n_clusters": k, "random_state": 42}))
+        dense_experiments.append(("birch", {"n_clusters": k}))
 
-    # DBSCAN parameter grid
     for eps in [0.3, 0.5, 0.7, 1.0, 1.5]:
         for min_samples in [5, 10]:
-            experiments.append(("dbscan", {"eps": eps, "min_samples": min_samples}))
+            dense_experiments.append(("dbscan", {"eps": eps, "min_samples": min_samples}))
+
+    sparse_experiments = []
+
+    # Sparse-safe algorithms over full data
+    for k in [2, 3, 5, 7]:
+        sparse_experiments.append(("minibatch_kmeans", {"n_clusters": k, "random_state": 42}))
+
+    # Kod sparse teksta cosine obicno ima vise smisla od euclidean
+    for eps in [0.3, 0.5, 0.7, 1.0]:
+        for min_samples in [5, 10]:
+            sparse_experiments.append(
+                ("dbscan", {"eps": eps, "min_samples": min_samples, "metric": "cosine"})
+            )
 
     all_results = []
 
-    for rep_name, rep_path in representations.items():
-        print(f"\n=== Loading {rep_name} ===")
+    # 1) Reduced dense representations
+    for rep_name, rep_path in dense_representations.items():
+        print(f"\n=== Loading dense representation: {rep_name} ===")
         X = load_dense_array(rep_path)
 
-        for algorithm_name, params in experiments:
+        for algorithm_name, params in dense_experiments:
             print(f"Running {algorithm_name} on {rep_name} with params={params}...")
 
-            param_suffix = "_".join(f"{k}-{v}" for k, v in params.items())
+            param_suffix = make_param_suffix(params)
+
+            model_path = models_dir / rep_name / f"{algorithm_name}_{param_suffix}.pkl"
+            labels_path = reports_dir / f"{algorithm_name}_{rep_name}_{param_suffix}_labels.npy"
+            config_path = configs_dir / f"{algorithm_name}_{rep_name}_{param_suffix}.json"
+
+            result = run_single_experiment(
+                algorithm_name=algorithm_name,
+                representation_name=rep_name,
+                X=X,
+                y_true=y_sample,
+                model_output_path=model_path,
+                labels_output_path=labels_path,
+                config_output_path=config_path,
+                params=params,
+            )
+
+            all_results.append(result)
+
+            print(
+                f"{algorithm_name} | rep={rep_name} | "
+                f"clusters={result['n_clusters_found']} | "
+                f"silhouette={result['silhouette']} | "
+                f"ari={result['ari']} | "
+                f"saved={result['model_saved']}"
+            )
+
+    # 2) Full sparse representations
+    for rep_name, rep_path in sparse_representations.items():
+        print(f"\n=== Loading sparse representation: {rep_name} ===")
+        X = load_sparse_matrix(rep_path)
+
+        for algorithm_name, params in sparse_experiments:
+            print(f"Running {algorithm_name} on {rep_name} with params={params}...")
+
+            param_suffix = make_param_suffix(params)
 
             model_path = models_dir / rep_name / f"{algorithm_name}_{param_suffix}.pkl"
             labels_path = reports_dir / f"{algorithm_name}_{rep_name}_{param_suffix}_labels.npy"
