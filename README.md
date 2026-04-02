@@ -93,6 +93,27 @@ Outputs:
 
 ---
 
+### Model saving notes
+
+Most clustering models are saved after training in:
+
+- models/clustering/
+
+However, some algorithms such as **BIRCH** cannot always be reliably serialized using joblib.
+
+In those cases:
+- the trained model is not saved
+- but all experiment information is still preserved
+
+Saved information includes:
+- predicted cluster labels → results/cluster_reports/
+- experiment parameters and configuration → results/configs/
+- evaluation metrics → results/metrics/clustering_metrics.csv
+
+This ensures that all results remain reproducible and fully documented, even when model serialization is not possible.
+
+---
+
 ## Srpski
 
 ### Opis
@@ -158,3 +179,24 @@ python -m scripts.run_visualizations
 - Random seed je fiksiran
 - Skripte se pokreću redom
 - Rezultati su reproduktivni
+
+---
+
+### Napomena o čuvanju modela
+
+Većina modela klasterovanja se čuva u:
+
+- models/clustering/
+
+Međutim, neki algoritmi poput **BIRCH** ne mogu uvek pouzdano da se serijalizuju pomoću joblib-a.
+
+U tim slučajevima:
+- model se ne čuva
+- ali svi rezultati eksperimenata ostaju sačuvani
+
+Sačuvane informacije uključuju:
+- predikovane labele → results/cluster_reports/
+- parametre i konfiguraciju → results/configs/
+- metrike → results/metrics/clustering_metrics.csv
+
+Na ovaj način su svi rezultati i dalje reproduktivni i potpuno dokumentovani.
