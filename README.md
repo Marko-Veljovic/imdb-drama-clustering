@@ -17,9 +17,13 @@ It includes:
 
 ### Setup
 
-python3 -m venv .venv  
-source .venv/bin/activate  
-pip install -r requirements.txt  
+Make sure you run all commands from the project root directory.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 ---
 
@@ -27,15 +31,24 @@ pip install -r requirements.txt
 
 1. Download data
 
+```bash
 python -m scripts.download_data
+```
+
+Outputs:
+- data/raw/
 
 2. Inspect sparse dataset (optional)
 
+```bash
 python -m scripts.inspect_sparse_data
+```
 
 3. Preprocessing
 
+```bash
 python -m scripts.run_preprocessing
+```
 
 Outputs:
 - data/processed/
@@ -43,7 +56,9 @@ Outputs:
 
 4. Run clustering experiments
 
+```bash
 python -m scripts.run_experiments
+```
 
 Outputs:
 - results/metrics/clustering_metrics.csv
@@ -53,7 +68,9 @@ Outputs:
 
 5. Generate visualizations
 
+```bash
 python -m scripts.run_visualizations
+```
 
 Outputs:
 - results/plots/
@@ -93,9 +110,13 @@ Obuhvata:
 
 ### Pokretanje
 
-python3 -m venv .venv  
-source .venv/bin/activate  
-pip install -r requirements.txt  
+Komande se pokreću iz root foldera projekta.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 ---
 
@@ -103,23 +124,33 @@ pip install -r requirements.txt
 
 1. Preuzimanje podataka
 
+```bash
 python -m scripts.download_data
+```
 
 2. Provera podataka (opciono)
 
+```bash
 python -m scripts.inspect_sparse_data
+```
 
 3. Preprocesiranje
 
+```bash
 python -m scripts.run_preprocessing
+```
 
 4. Klasterovanje
 
+```bash
 python -m scripts.run_experiments
+```
 
 5. Vizuelizacija
 
+```bash
 python -m scripts.run_visualizations
+```
 
 ---
 
