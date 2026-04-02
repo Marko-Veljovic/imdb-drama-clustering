@@ -6,6 +6,15 @@ import numpy as np
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
+plt.rcParams.update({
+    "font.size": 14,
+    "axes.titlesize": 16,
+    "axes.labelsize": 14,
+    "xtick.labelsize": 12,
+    "ytick.labelsize": 12,
+    "legend.fontsize": 12,
+    "legend.title_fontsize": 12,
+})
 
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
@@ -114,7 +123,7 @@ def plot_true_labels_2d(
     plt.title(title)
     plt.xlabel("SVD component 1")
     plt.ylabel("SVD component 2")
-    plt.legend(title="True class", fontsize=8, markerscale=1.5)
+    plt.legend(title="True class", fontsize=12, markerscale=1.8)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -150,7 +159,7 @@ def plot_true_labels_3d(
     ax.set_xlabel("SVD component 1")
     ax.set_ylabel("SVD component 2")
     ax.set_zlabel("SVD component 3")
-    ax.legend(title="True class", fontsize=8, markerscale=1.5)
+    ax.legend(title="True class", fontsize=12, markerscale=1.8)
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
@@ -274,7 +283,7 @@ def plot_cluster_labels_2d(
     plt.title(title)
     plt.xlabel("SVD component 1")
     plt.ylabel("SVD component 2")
-    plt.legend(title="Cluster", fontsize=8, markerscale=1.5)
+    plt.legend(title="Cluster", fontsize=12, markerscale=1.8)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -314,7 +323,7 @@ def plot_cluster_labels_3d(
     ax.set_xlabel("SVD component 1")
     ax.set_ylabel("SVD component 2")
     ax.set_zlabel("SVD component 3")
-    ax.legend(title="Cluster", fontsize=8, markerscale=1.5)
+    ax.legend(title="Cluster", fontsize=12, markerscale=1.8)
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
@@ -399,7 +408,8 @@ def plot_best_metric_bar(
     plt.title(title)
     plt.xlabel("Algorithm + representation")
     plt.ylabel(ylabel)
-    plt.xticks(rotation=45, ha="right")
+    plt.xticks(rotation=45, ha="right", fontsize=11)
+    plt.yticks(fontsize=11)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
@@ -560,7 +570,7 @@ def plot_dbscan_heatmap(
                 else:
                     text = f"{value:.4f}"
 
-            ax.text(j, i, text, ha="center", va="center", fontsize=8)
+            ax.text(j, i, text, ha="center", va="center", fontsize=10)
 
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label(value_column)
@@ -683,7 +693,7 @@ def plot_k_selection_metric(
     plt.xlabel("n_clusters")
     plt.ylabel(metric.upper() if metric != "silhouette" else "Silhouette")
     plt.xticks(sorted(summary["param_n_clusters"].unique()))
-    plt.legend(title="Representation")
+    plt.legend(title="Representation", fontsize=12)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.close()
