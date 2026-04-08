@@ -1,4 +1,4 @@
-# IMDB.drama Clustering Project
+# IMDB Drama Clustering Project
 
 ## English
 
