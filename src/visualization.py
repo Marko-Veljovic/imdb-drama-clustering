@@ -125,7 +125,7 @@ def plot_true_labels_2d(
     plt.ylabel("SVD component 2")
     plt.legend(title="True class", fontsize=12, markerscale=1.8)
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
@@ -162,7 +162,7 @@ def plot_true_labels_3d(
     ax.legend(title="True class", fontsize=12, markerscale=1.8)
 
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
@@ -285,7 +285,7 @@ def plot_cluster_labels_2d(
     plt.ylabel("SVD component 2")
     plt.legend(title="Cluster", fontsize=12, markerscale=1.8)
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
@@ -326,7 +326,7 @@ def plot_cluster_labels_3d(
     ax.legend(title="Cluster", fontsize=12, markerscale=1.8)
 
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
@@ -411,7 +411,7 @@ def plot_best_metric_bar(
     plt.xticks(rotation=45, ha="right", fontsize=11)
     plt.yticks(fontsize=11)
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
@@ -437,7 +437,7 @@ def plot_runtime_comparison(
     plt.ylabel("Runtime (seconds)")
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
@@ -576,7 +576,7 @@ def plot_dbscan_heatmap(
     cbar.set_label(value_column)
 
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
@@ -695,7 +695,7 @@ def plot_k_selection_metric(
     plt.xticks(sorted(summary["param_n_clusters"].unique()))
     plt.legend(title="Representation", fontsize=12)
     plt.tight_layout()
-    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.savefig(output_path, dpi=120, bbox_inches="tight")
     plt.close()
 
 
