@@ -62,13 +62,13 @@ def evaluate_clustering(X, labels: np.ndarray, y_true: np.ndarray) -> dict:
     valid_for_internal = len(non_noise_labels) >= 2 and len(non_noise_labels) < len(labels)
 
     if valid_for_internal:
-        # silhouette ume da radi i nad sparse matricama
+        # silhouette works on sparse matrices
         try:
             result["silhouette"] = float(silhouette_score(X, labels))
         except Exception:
             pass
 
-        # Ove metrike su najbezbednije nad dense reprezentacijama
+        # sparse-safe metrics
         if not is_sparse_matrix(X):
             try:
                 result["davies_bouldin"] = float(davies_bouldin_score(X, labels))

@@ -30,7 +30,6 @@ def main() -> None:
     }
 
     # Full feature-space sparse representation
-    # Promeni ime fajla ako je kod tebe drugacije.
     sparse_representations = {
         "full_sparse": processed_dir / "X_sample.npz",
     }
@@ -54,7 +53,7 @@ def main() -> None:
     for k in [2, 3, 5, 7]:
         sparse_experiments.append(("minibatch_kmeans", {"n_clusters": k, "random_state": 42}))
 
-    # Kod sparse teksta cosine obicno ima vise smisla od euclidean
+    # cosine metric is usually used in dbscan with sparse matrices
     for eps in [0.3, 0.5, 0.7, 1.0]:
         for min_samples in [5, 10]:
             sparse_experiments.append(
