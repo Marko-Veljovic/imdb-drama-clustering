@@ -13,6 +13,17 @@ def load_data(raw_dir: Path):
     return X, y
 
 
+def load_feature_names(raw_dir: Path) -> np.ndarray:
+    path = raw_dir / "feature_names.npy"
+
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Missing file: {path}. Run python -m scripts.download_data first."
+        )
+
+    return np.load(path, allow_pickle=True)
+
+
 def remove_empty_columns(X):
     """
     Remove columns that are entirely zero.
@@ -42,7 +53,7 @@ def stratified_sample(X, y, n_samples=15000, random_state=42):
         y,
         train_size=n_samples,
         stratify=y,
-        random_state=random_state
+        random_state=random_state,
     )
     return X_sample, y_sample
 

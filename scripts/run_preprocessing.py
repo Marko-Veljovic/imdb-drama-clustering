@@ -1,6 +1,7 @@
 from pathlib import Path
 from src.preprocessing import (
     load_data,
+    load_feature_names,
     remove_empty_columns,
     scale_data,
     stratified_sample,
@@ -15,17 +16,32 @@ def main():
     raw_dir = Path("data/raw")
     processed_dir = Path("data/processed")
     models_dir = Path("models/preprocessing")
-    models_dir.mkdir(parents=True, exist_ok=True)
 
     processed_dir.mkdir(parents=True, exist_ok=True)
     models_dir.mkdir(parents=True, exist_ok=True)
 
     print("=== LOADING DATA ===")
     X, y = load_data(raw_dir)
+    feature_names = load_feature_names(raw_dir)
+
+    print(f"Original number of features: {X.shape[1]}")
+    print(f"Original number of feature names: {len(feature_names)}")
+
+    if len(feature_names) != X.shape[1]:
+        raise ValueError(
+            f"Feature names length mismatch: {len(feature_names)} names, "
+            f"but X has {X.shape[1]} columns."
+        )
 
     print("=== REMOVING EMPTY COLUMNS ===")
     X, mask = remove_empty_columns(X)
+    feature_names_filtered = feature_names[mask]
+
     print(f"Remaining features: {X.shape[1]}")
+    print(f"Remaining feature names: {len(feature_names_filtered)}")
+
+    save_dense(processed_dir / "feature_names_filtered.npy", feature_names_filtered)
+    save_dense(processed_dir / "feature_mask.npy", mask)
 
     print("=== SCALING DATA ===")
     X_scaled, scaler = scale_data(X)

@@ -14,10 +14,19 @@ def main() -> None:
     X = dataset.data      # sparse matrix
     y = dataset.target    # array
 
+    feature_names = np.array(dataset.feature_names, dtype=str)
+
+    if len(feature_names) != X.shape[1]:
+        print("WARNING: Number of feature names does not match number of columns.")
+        print("Using fallback feature names.")
+        feature_names = np.array([f"feature_{i}" for i in range(X.shape[1])], dtype=str)
+
+
     print("\n=== BASIC INFO ===")
     print(f"X type: {type(X)}")
     print(f"X shape: {X.shape}")
     print(f"y shape: {y.shape}")
+    print(f"Number of feature names: {len(feature_names)}")
 
     print("\n=== SPARSITY INFO ===")
     if sparse.issparse(X):
@@ -34,15 +43,14 @@ def main() -> None:
     for val, cnt in zip(unique, counts):
         print(f"{val}: {cnt}")
 
-    # Save sparse matrix
     sparse.save_npz(raw_dir / "X_sparse.npz", X)
-
-    # Save target
     np.save(raw_dir / "y.npy", y)
+    np.save(raw_dir / "feature_names.npy", feature_names)
 
     print("\nSaved:")
     print(" - X_sparse.npz")
     print(" - y.npy")
+    print(" - feature_names.npy")
 
 
 if __name__ == "__main__":
