@@ -28,6 +28,8 @@ def count_unique_sparse_rows(X):
         start = indptr[i]
         end = indptr[i + 1]
 
+        # A sparse row is uniquely determined by its non-zero column indices
+        # and values. Convert them to bytes so they can be used as a Counter key.
         row_key = (
             indices[start:end].tobytes(),
             data[start:end].tobytes(),
