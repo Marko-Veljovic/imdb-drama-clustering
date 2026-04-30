@@ -1,6 +1,46 @@
 from pathlib import Path
+from collections import Counter
+
 import numpy as np
 from scipy import sparse
+
+
+def count_unique_sparse_rows(X):
+    """
+    Count unique rows in a sparse matrix
+
+    Each row is represented by:
+    - indices of non-zero columns
+    - corresponding non-zero values
+
+    This checks exact duplicate sparse rows.
+    """
+    X_csr = X.tocsr(copy=True)
+    X_csr.sort_indices()
+
+    indptr = X_csr.indptr
+    indices = X_csr.indices
+    data = X_csr.data
+
+    row_counts = Counter()
+
+    for i in range(X_csr.shape[0]):
+        start = indptr[i]
+        end = indptr[i + 1]
+
+        row_key = (
+            indices[start:end].tobytes(),
+            data[start:end].tobytes(),
+        )
+
+        row_counts[row_key] += 1
+
+    unique_rows = len(row_counts)
+    duplicate_rows = X_csr.shape[0] - unique_rows
+    duplicate_patterns = sum(1 for count in row_counts.values() if count > 1)
+    max_duplicate_count = max(row_counts.values()) if row_counts else 0
+
+    return unique_rows, duplicate_rows, duplicate_patterns, max_duplicate_count
 
 
 def main() -> None:
@@ -29,19 +69,16 @@ def main() -> None:
     print(f"Non-zero elements: {nnz}")
     print(f"Sparsity: {sparsity:.6f}")
 
-    print("\n=== SAMPLE-BASED DUPLICATE ROW CHECK ===")
-    # Full duplicate detection may be expensive for a large sparse matrix.
-    # As a lightweight diagnostic, we inspect a smaller sample of rows.
-    sample_size = min(5000, X.shape[0])
+    print("\n=== FULL DUPLICATE ROW CHECK ===")
+    unique_rows, duplicate_rows, duplicate_patterns, max_duplicate_count = (
+        count_unique_sparse_rows(X)
+    )
 
-    # Converting only a small sample to dense is acceptable and simplifies
-    # the duplicate check with NumPy.
-    X_sample = X[:sample_size].toarray()
-    unique_rows = np.unique(X_sample, axis=0).shape[0]
-
-    print(f"Sampled rows checked: {sample_size}")
-    print(f"Unique rows in sample: {unique_rows}")
-    print(f"Duplicate rows in sample: {sample_size - unique_rows}")
+    print(f"Rows checked: {X.shape[0]}")
+    print(f"Unique rows: {unique_rows}")
+    print(f"Duplicate rows: {duplicate_rows}")
+    print(f"Duplicate row patterns: {duplicate_patterns}")
+    print(f"Maximum repetitions of one row: {max_duplicate_count}")
 
     print("\n=== COLUMN ACTIVITY CHECK ===")
     # CSC format is more convenient for column-wise analysis.
