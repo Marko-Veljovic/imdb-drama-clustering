@@ -12,7 +12,7 @@ from src.preprocessing import (
 )
 
 
-def main():
+def main() -> None:
     raw_dir = Path("data/raw")
     processed_dir = Path("data/processed")
     models_dir = Path("models/preprocessing")
